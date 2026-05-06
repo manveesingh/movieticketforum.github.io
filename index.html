@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CineVault — Book Your Experience</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #0a0408;
+  --surface:    #1c0408;
+  --surface3:   #2a0a0e;
+  --red:        #870a22;
+  --red-bright: #c0102e;
+  --red-dim:    rgba(135,10,34,0.22);
+  --butter:     #e8cc7a;
+  --muted:      #937a52;
+  --text:       #fff5f0;
+  --border:     rgba(135,10,34,0.45);
+  --r:          4px;
+}
+
+body {
+  font-family: 'Jost', sans-serif;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh; overflow-x: hidden;
+}
+
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 999; opacity: 0.8;
+}
+body::after {
+  content: ''; position: fixed; top: -250px; left: 50%; transform: translateX(-50%);
+  width: 1000px; height: 700px;
+  background: radial-gradient(ellipse, rgba(135,10,34,0.16) 0%, transparent 60%);
+  pointer-events: none; z-index: 0;
+}
+
+.page-wrap {
+  position: relative; z-index: 1;
+  max-width: 900px; margin: 0 auto;
+  padding: 64px 28px 96px;
+  animation: fadeUp 0.7s ease both;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* HEADER */
+.site-header { text-align: center; margin-bottom: 60px; animation: fadeUp 0.7s 0.08s ease both; }
+.logo {
+  display: inline-flex; align-items: center; gap: 12px;
+  font-family: 'Playfair Display', serif; font-weight: 900;
+  font-size: 0.95rem; letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--butter); margin-bottom: 28px;
+}
+.logo-divider { width: 1px; height: 16px; background: var(--butter); opacity: 0.3; }
+.site-header h1 {
+  font-family: 'Playfair Display', serif; font-weight: 900;
+  font-size: clamp(2.2rem, 5.5vw, 3.6rem); line-height: 1.1;
+  color: var(--text); margin-bottom: 14px;
+}
+.site-header h1 em { font-style: italic; color: var(--butter); }
+.site-header p { font-size: 0.92rem; color: var(--muted); font-weight: 300; letter-spacing: 0.05em; }
+.gold-line { width: 48px; height: 2px; background: linear-gradient(90deg, transparent, var(--red), transparent); margin: 18px auto; }
+
+/* FORM CARD */
+.form-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 52px 56px; position: relative; overflow: hidden;
+  box-shadow: 0 0 80px rgba(135,10,34,0.12), inset 0 0 100px rgba(0,0,0,0.25);
+  animation: fadeUp 0.7s 0.15s ease both;
+}
+.form-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, transparent, var(--red-bright), var(--red), transparent);
+}
+.form-card::after {
+  content: ''; position: absolute; bottom: 0; right: 0; width: 320px; height: 320px;
+  background: radial-gradient(circle at bottom right, rgba(135,10,34,0.1), transparent 65%);
+  pointer-events: none;
+}
+
+/* SECTION LABELS */
+.section-label {
+  font-size: 0.66rem; font-weight: 600; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--butter);
+  margin-bottom: 20px; display: flex; align-items: center; gap: 12px;
+}
+.section-label::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
+.form-section { margin-bottom: 44px; }
+
+/* MOVIE GRID — poster cards */
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.movie-option input[type="radio"] { display: none; }
+.movie-card {
+  border: 1.5px solid var(--border); border-radius: var(--r);
+  cursor: pointer; transition: all 0.25s ease;
+  position: relative; overflow: hidden; background: var(--surface3);
+  aspect-ratio: 2 / 3;
+}
+.movie-poster {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  transition: transform 0.4s ease;
+}
+.movie-card:hover { border-color: var(--red-bright); transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,0,0,0.5); }
+.movie-card:hover .movie-poster { transform: scale(1.05); }
+.movie-option input:checked + .movie-card {
+  border-color: var(--red-bright);
+  box-shadow: 0 0 0 2px var(--red-bright), 0 10px 30px rgba(135,10,34,0.45);
+}
+.movie-option input:checked + .movie-card .movie-overlay {
+  background: linear-gradient(0deg, rgba(135,10,34,0.9) 0%, rgba(135,10,34,0.4) 55%, transparent 100%);
+}
+.movie-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(0deg, rgba(6,2,6,0.92) 0%, rgba(6,2,6,0.4) 48%, transparent 100%);
+  transition: background 0.25s;
+}
+.movie-info {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 12px 13px 14px;
+}
+.selected-badge {
+  display: none; position: absolute; top: 9px; right: 9px;
+  background: var(--red-bright); color: var(--butter);
+  font-size: 0.58rem; font-weight: 700; letter-spacing: 0.12em;
+  padding: 3px 8px; border-radius: 2px; text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+.movie-option input:checked + .movie-card .selected-badge { display: block; }
+.movie-title {
+  font-family: 'Playfair Display', serif; font-size: 0.92rem; font-weight: 700;
+  line-height: 1.25; color: #fff; margin-bottom: 3px;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.9);
+}
+.movie-genre {
+  font-size: 0.63rem; color: rgba(255,245,240,0.58);
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+
+/* DATE */
+.date-input-wrap { width: fit-content; }
+.date-input-wrap input[type="date"] {
+  background: var(--surface3); border: 1.5px solid var(--border);
+  border-radius: var(--r); padding: 12px 18px;
+  color: var(--text); font-family: 'Jost', sans-serif; font-size: 0.95rem;
+  outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  color-scheme: dark; min-width: 200px;
+}
+.date-input-wrap input[type="date"]:focus { border-color: var(--red-bright); box-shadow: 0 0 0 3px rgba(135,10,34,0.2); }
+
+/* TIME */
+.time-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+.time-option input[type="radio"] { display: none; }
+.time-pill {
+  padding: 11px 22px; border: 1.5px solid var(--border); border-radius: var(--r);
+  cursor: pointer; font-size: 0.9rem; font-weight: 500; color: var(--muted);
+  transition: all 0.2s ease; background: var(--surface3); letter-spacing: 0.03em;
+}
+.time-pill:hover { border-color: var(--red-bright); color: var(--text); background: rgba(135,10,34,0.18); }
+.time-option input:checked + .time-pill { border-color: var(--red-bright); color: var(--butter); background: var(--red-dim); box-shadow: 0 0 12px rgba(135,10,34,0.2); }
+.time-sub { display: block; font-size: 0.67rem; color: var(--muted); margin-top: 2px; font-weight: 300; }
+.time-option input:checked + .time-pill .time-sub { color: rgba(232,204,122,0.55); }
+
+/* STEPPER */
+.stepper-wrap { display: flex; align-items: center; width: fit-content; border: 1.5px solid var(--border); border-radius: var(--r); overflow: hidden; }
+.stepper-btn { width: 48px; height: 48px; background: #3a0810; border: none; color: var(--butter); font-size: 1.3rem; cursor: pointer; transition: background 0.15s; display: flex; align-items: center; justify-content: center; }
+.stepper-btn:hover { background: var(--red); color: #fff; }
+.stepper-count { width: 68px; height: 48px; background: var(--surface3); border: none; border-left: 1.5px solid var(--border); border-right: 1.5px solid var(--border); color: var(--butter); font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; text-align: center; cursor: default; display: flex; align-items: center; justify-content: center; }
+.stepper-note { margin-left: 16px; font-size: 0.82rem; color: var(--muted); }
+
+/* SEAT */
+.seat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.seat-option input[type="radio"] { display: none; }
+.seat-card { border: 1.5px solid var(--border); border-radius: var(--r); padding: 18px 16px; cursor: pointer; transition: all 0.25s ease; background: var(--surface3); text-align: center; }
+.seat-card:hover { border-color: var(--red-bright); background: rgba(135,10,34,0.18); }
+.seat-option input:checked + .seat-card { border-color: var(--red-bright); background: var(--red-dim); box-shadow: 0 0 16px rgba(135,10,34,0.25); }
+.seat-icon { font-size: 1.4rem; display: block; margin-bottom: 8px; }
+.seat-name { font-family: 'Playfair Display', serif; font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.seat-price { font-size: 0.78rem; color: var(--butter); font-weight: 500; }
+
+/* FOOD GRID — image cards */
+.food-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.food-option input[type="checkbox"] { display: none; }
+.food-card {
+  border: 1.5px solid var(--border); border-radius: var(--r);
+  cursor: pointer; transition: all 0.25s ease;
+  background: var(--surface3); overflow: hidden;
+  position: relative; display: flex; flex-direction: column;
+}
+.food-img-wrap { width: 100%; height: 120px; overflow: hidden; flex-shrink: 0; }
+.food-img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s ease; }
+.food-card:hover .food-img { transform: scale(1.07); }
+.food-card:hover { border-color: var(--red-bright); transform: translateY(-2px); box-shadow: 0 8px 22px rgba(0,0,0,0.4); }
+.food-option input:checked + .food-card { border-color: var(--red-bright); box-shadow: 0 0 0 2px var(--red-bright), 0 6px 22px rgba(135,10,34,0.35); }
+.food-body { padding: 10px 12px 12px; display: flex; align-items: center; justify-content: space-between; gap: 6px; flex: 1; }
+.food-name { font-size: 0.84rem; font-weight: 500; color: var(--text); line-height: 1.3; }
+.food-price-tag { font-size: 0.8rem; color: var(--butter); font-weight: 600; white-space: nowrap; }
+.food-tick {
+  position: absolute; top: 8px; right: 8px;
+  width: 22px; height: 22px; background: var(--red-bright); border-radius: 50%;
+  display: none; align-items: center; justify-content: center;
+  color: var(--butter); font-size: 0.65rem; font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+.food-option input:checked + .food-card .food-tick { display: flex; }
+
+/* INPUTS */
+.input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.input-group { display: flex; flex-direction: column; gap: 7px; }
+.input-group label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.input-group input {
+  background: var(--surface3); border: 1.5px solid var(--border); border-radius: var(--r);
+  padding: 12px 16px; color: var(--text); font-family: 'Jost', sans-serif;
+  font-size: 0.95rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+}
+.input-group input:focus { border-color: var(--red-bright); box-shadow: 0 0 0 3px rgba(135,10,34,0.18); }
+.input-group input::placeholder { color: rgba(147,122,82,0.35); }
+
+/* SUMMARY */
+.summary-bar { margin-top: 44px; border-top: 1px solid var(--border); padding-top: 32px; display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.summary-total { display: flex; flex-direction: column; gap: 3px; }
+.summary-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+.summary-amount { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; color: var(--butter); line-height: 1; }
+.summary-breakdown { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+.submit-btn {
+  position: relative; background: var(--red); border: 1.5px solid var(--red-bright);
+  color: var(--butter); font-family: 'Jost', sans-serif; font-size: 0.78rem; font-weight: 600;
+  letter-spacing: 0.22em; text-transform: uppercase; padding: 16px 52px;
+  cursor: pointer; overflow: hidden; transition: all 0.3s ease; border-radius: var(--r);
+  box-shadow: 0 4px 22px rgba(135,10,34,0.4);
+}
+.submit-btn::before { content: ''; position: absolute; inset: 0; background: var(--red-bright); transform: scaleX(0); transform-origin: left; transition: transform 0.3s ease; }
+.submit-btn:hover::before { transform: scaleX(1); }
+.submit-btn:hover { box-shadow: 0 6px 30px rgba(192,16,46,0.55); }
+.submit-btn span { position: relative; z-index: 1; }
+
+/* SUCCESS */
+.success-screen { display: none; text-align: center; padding: 48px 20px; animation: fadeUp 0.5s ease both; }
+.success-screen.visible { display: block; }
+.success-icon { width: 80px; height: 80px; border: 2px solid var(--red-bright); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 24px; color: var(--butter); background: var(--red-dim); box-shadow: 0 0 32px rgba(135,10,34,0.45); animation: scaleIn 0.4s 0.1s ease both; }
+@keyframes scaleIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.success-screen h2 { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+.success-screen p { color: var(--muted); font-size: 0.95rem; margin-bottom: 6px; }
+.ticket-ref { display: inline-block; margin-top: 20px; padding: 10px 28px; border: 1.5px solid var(--red-bright); font-family: 'Playfair Display', serif; font-size: 1.2rem; letter-spacing: 0.15em; color: var(--butter); background: var(--red-dim); border-radius: var(--r); }
+.form-inner.hidden { display: none; }
+
+/* RESPONSIVE */
+@media (max-width: 680px) {
+  .form-card { padding: 32px 20px; }
+  .movie-grid { grid-template-columns: repeat(2, 1fr); }
+  .food-grid  { grid-template-columns: repeat(2, 1fr); }
+  .seat-grid  { grid-template-columns: repeat(3, 1fr); }
+  .input-row  { grid-template-columns: 1fr; }
+  .summary-bar { flex-direction: column; align-items: flex-start; }
+  .submit-btn { width: 100%; text-align: center; }
+}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <header class="site-header">
+    <div class="logo">
+      <span>✦</span><span class="logo-divider"></span>
+      <span>CineVault</span>
+      <span class="logo-divider"></span><span>✦</span>
+    </div>
+    <h1>Book Your <em>Experience</em></h1>
+    <div class="gold-line"></div>
+    <p>Select your film, time &amp; indulgences below</p>
+  </header>
+
+  <div class="form-card">
+    <div class="form-inner" id="formInner">
+
+      <!-- 01 MOVIE -->
+      <div class="form-section">
+        <div class="section-label">01 — Choose Your Film</div>
+        <div class="movie-grid">
+
+          <label class="movie-option">
+            <input type="radio" name="movie" value="Interstellar" checked>
+            <div class="movie-card">
+              <img class="movie-poster" src="https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg" alt="Interstellar" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=300&q=80'">
+              <div class="movie-overlay"></div>
+              <div class="selected-badge">Selected</div>
+              <div class="movie-info"><div class="movie-title">Interstellar</div><div class="movie-genre">Sci-Fi · Epic</div></div>
+            </div>
+          </label>
+
+          <label class="movie-option">
+            <input type="radio" name="movie" value="Oppenheimer">
+            <div class="movie-card">
+              <img class="movie-poster" src="https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg" alt="Oppenheimer" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&q=80'">
+              <div class="movie-overlay"></div>
+              <div class="selected-badge">Selected</div>
+              <div class="movie-info"><div class="movie-title">Oppenheimer</div><div class="movie-genre">Drama · History</div></div>
+            </div>
+          </label>
+
+          <label class="movie-option">
+            <input type="radio" name="movie" value="Dune: Part Two">
+            <div class="movie-card">
+              <img class="movie-poster" src="https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg" alt="Dune Part Two" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=300&q=80'">
+              <div class="movie-overlay"></div>
+              <div class="selected-badge">Selected</div>
+              <div class="movie-info"><div class="movie-title">Dune: Part Two</div><div class="movie-genre">Sci-Fi · Action</div></div>
+            </div>
+          </label>
+
+          <label class="movie-option">
+            <input type="radio" name="movie" value="The Brutalist">
+            <div class="movie-card">
+              <img class="movie-poster" src="https://image.tmdb.org/t/p/w500/uCJrIqhiUGBVKoJxHQIerCNOVUF.jpg" alt="The Brutalist" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1486325212027-8081e485255e?w=300&q=80'">
+              <div class="movie-overlay"></div>
+              <div class="selected-badge">Selected</div>
+              <div class="movie-info"><div class="movie-title">The Brutalist</div><div class="movie-genre">Drama · Art</div></div>
+            </div>
+          </label>
+
+          <label class="movie-option">
+            <input type="radio" name="movie" value="Conclave">
+            <div class="movie-card">
+              <img class="movie-poster" src="https://image.tmdb.org/t/p/w500/m5x8D0bAQbvbBfpXoaOKIsNfFhU.jpg" alt="Conclave" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1520637836862-4d197d17c38a?w=300&q=80'">
+              <div class="movie-overlay"></div>
+              <div class="selected-badge">Selected</div>
+              <div class="movie-info"><div class="movie-title">Conclave</div><div class="movie-genre">Thriller · Mystery</div></div>
+            </div>
+          </label>
+
+          <label class="movie-option">
+            <input type="radio" name="movie" value="Nosferatu">
+            <div class="movie-card">
+              <img class="movie-poster" src="https://image.tmdb.org/t/p/w500/5qGIxdEO841C0tdY8vOdLoRVrr0.jpg" alt="Nosferatu" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1509248961158-e54f6934749c?w=300&q=80'">
+              <div class="movie-overlay"></div>
+              <div class="selected-badge">Selected</div>
+              <div class="movie-info"><div class="movie-title">Nosferatu</div><div class="movie-genre">Horror · Gothic</div></div>
+            </div>
+          </label>
+
+        </div>
+      </div>
+
+      <!-- 02 DATE -->
+      <div class="form-section">
+        <div class="section-label">02 — Select Date</div>
+        <div class="date-input-wrap"><input type="date" id="showDate" name="date"></div>
+      </div>
+
+      <!-- 03 TIME -->
+      <div class="form-section">
+        <div class="section-label">03 — Show Time</div>
+        <div class="time-grid">
+          <label class="time-option"><input type="radio" name="time" value="11:00 AM"><div class="time-pill">11:00 AM<span class="time-sub">Morning</span></div></label>
+          <label class="time-option"><input type="radio" name="time" value="2:30 PM" checked><div class="time-pill">2:30 PM<span class="time-sub">Matinée</span></div></label>
+          <label class="time-option"><input type="radio" name="time" value="6:00 PM"><div class="time-pill">6:00 PM<span class="time-sub">Evening</span></div></label>
+          <label class="time-option"><input type="radio" name="time" value="9:15 PM"><div class="time-pill">9:15 PM<span class="time-sub">Night</span></div></label>
+          <label class="time-option"><input type="radio" name="time" value="11:45 PM"><div class="time-pill">11:45 PM<span class="time-sub">Midnight</span></div></label>
+        </div>
+      </div>
+
+      <!-- 04 TICKETS -->
+      <div class="form-section">
+        <div class="section-label">04 — Number of Tickets</div>
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:16px;">
+          <div class="stepper-wrap">
+            <button type="button" class="stepper-btn" id="decBtn">−</button>
+            <div class="stepper-count" id="ticketCount">2</div>
+            <button type="button" class="stepper-btn" id="incBtn">+</button>
+          </div>
+          <span class="stepper-note" id="ticketNote">2 tickets selected</span>
+        </div>
+      </div>
+
+      <!-- 05 SEAT -->
+      <div class="form-section">
+        <div class="section-label">05 — Seat Category</div>
+        <div class="seat-grid">
+          <label class="seat-option"><input type="radio" name="seat" value="standard" checked>
+            <div class="seat-card"><span class="seat-icon">🪑</span><div class="seat-name">Standard</div><div class="seat-price">₹250 / seat</div></div>
+          </label>
+          <label class="seat-option"><input type="radio" name="seat" value="premium">
+            <div class="seat-card"><span class="seat-icon">🎭</span><div class="seat-name">Premium</div><div class="seat-price">₹450 / seat</div></div>
+          </label>
+          <label class="seat-option"><input type="radio" name="seat" value="recliner">
+            <div class="seat-card"><span class="seat-icon">👑</span><div class="seat-name">Recliner</div><div class="seat-price">₹750 / seat</div></div>
+          </label>
+        </div>
+      </div>
+
+      <!-- 06 FOOD -->
+      <div class="form-section">
+        <div class="section-label">06 — Food &amp; Drinks <span style="font-weight:300;text-transform:none;letter-spacing:0;font-size:0.74rem;color:var(--muted);margin-left:6px;">(optional · multi-select)</span></div>
+        <div class="food-grid">
+
+          <label class="food-option">
+            <input type="checkbox" name="food" value="Popcorn Large" data-price="180">
+            <div class="food-card">
+              <div class="food-img-wrap"><img class="food-img" src="https://images.unsplash.com/photo-1585647347384-2593bc35786b?w=400&q=80" alt="Large Popcorn" loading="lazy" onerror="this.style.background='#3a0810'"></div>
+              <div class="food-tick">✓</div>
+              <div class="food-body"><div class="food-name">Large Popcorn</div><div class="food-price-tag">₹180</div></div>
+            </div>
+          </label>
+
+          <label class="food-option">
+            <input type="checkbox" name="food" value="Cold Drink" data-price="100">
+            <div class="food-card">
+              <div class="food-img-wrap"><img class="food-img" src="https://images.unsplash.com/photo-1437418747212-8d9709afab22?w=400&q=80" alt="Cold Drink" loading="lazy" onerror="this.style.background='#3a0810'"></div>
+              <div class="food-tick">✓</div>
+              <div class="food-body"><div class="food-name">Cold Drink</div><div class="food-price-tag">₹100</div></div>
+            </div>
+          </label>
+
+          <label class="food-option">
+            <input type="checkbox" name="food" value="Nachos" data-price="220">
+            <div class="food-card">
+              <div class="food-img-wrap"><img class="food-img" src="https://images.unsplash.com/photo-1513456852971-30c0b8199d4d?w=400&q=80" alt="Nachos" loading="lazy" onerror="this.style.background='#3a0810'"></div>
+              <div class="food-tick">✓</div>
+              <div class="food-body"><div class="food-name">Nachos + Dip</div><div class="food-price-tag">₹220</div></div>
+            </div>
+          </label>
+
+          <label class="food-option">
+            <input type="checkbox" name="food" value="Hot Dog" data-price="160">
+            <div class="food-card">
+              <div class="food-img-wrap"><img class="food-img" src="https://images.unsplash.com/photo-1612392062631-94d6a2e18b4d?w=400&q=80" alt="Hot Dog" loading="lazy" onerror="this.style.background='#3a0810'"></div>
+              <div class="food-tick">✓</div>
+              <div class="food-body"><div class="food-name">Hot Dog</div><div class="food-price-tag">₹160</div></div>
+            </div>
+          </label>
+
+          <label class="food-option">
+            <input type="checkbox" name="food" value="Coffee" data-price="120">
+            <div class="food-card">
+              <div class="food-img-wrap"><img class="food-img" src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&q=80" alt="Coffee" loading="lazy" onerror="this.style.background='#3a0810'"></div>
+              <div class="food-tick">✓</div>
+              <div class="food-body"><div class="food-name">Coffee</div><div class="food-price-tag">₹120</div></div>
+            </div>
+          </label>
+
+          <label class="food-option">
+            <input type="checkbox" name="food" value="Combo Deal" data-price="380">
+            <div class="food-card">
+              <div class="food-img-wrap"><img class="food-img" src="https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&q=80" alt="Combo Deal" loading="lazy" onerror="this.style.background='#3a0810'"></div>
+              <div class="food-tick">✓</div>
+              <div class="food-body"><div class="food-name">Combo Deal</div><div class="food-price-tag">₹380</div></div>
+            </div>
+          </label>
+
+        </div>
+      </div>
+
+      <!-- 07 DETAILS -->
+      <div class="form-section">
+        <div class="section-label">07 — Your Details</div>
+        <div class="input-row">
+          <div class="input-group">
+            <label for="fullName">Full Name</label>
+            <input type="text" id="fullName" placeholder="e.g. Manvee Singh" autocomplete="name">
+          </div>
+          <div class="input-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" placeholder="your@email.com" autocomplete="email">
+          </div>
+        </div>
+      </div>
+
+      <!-- SUMMARY -->
+      <div class="summary-bar">
+        <div class="summary-total">
+          <span class="summary-label">Total Amount</span>
+          <span class="summary-amount" id="totalAmount">₹500</span>
+          <span class="summary-breakdown" id="totalBreakdown">2 × Standard</span>
+        </div>
+        <button class="submit-btn" onclick="handleSubmit()"><span>Confirm Booking →</span></button>
+      </div>
+
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="success-screen" id="successScreen">
+      <div class="success-icon">✦</div>
+      <h2>Booking Confirmed</h2>
+      <p id="successMovie">Enjoy your film at CineVault.</p>
+      <p id="successDetails" style="margin-top:8px;"></p>
+      <div class="ticket-ref" id="ticketRef">CVT-000000</div>
+      <p style="margin-top:24px;font-size:0.8rem;color:var(--muted);">A confirmation has been sent to your email.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const dateInput = document.getElementById('showDate');
+  const t = new Date().toISOString().split('T')[0];
+  dateInput.value = t; dateInput.min = t;
+
+  let tickets = 2;
+  const countEl = document.getElementById('ticketCount');
+  const noteEl  = document.getElementById('ticketNote');
+  document.getElementById('incBtn').addEventListener('click', () => { if (tickets < 10) { tickets++; sync(); } });
+  document.getElementById('decBtn').addEventListener('click', () => { if (tickets > 1)  { tickets--; sync(); } });
+  function sync() {
+    countEl.textContent = tickets;
+    noteEl.textContent  = tickets === 1 ? '1 ticket selected' : `${tickets} tickets selected`;
+    updateTotal();
+  }
+
+  const seatPrices = { standard: 250, premium: 450, recliner: 750 };
+  function updateTotal() {
+    const seat = document.querySelector('input[name="seat"]:checked').value;
+    let food = 0;
+    document.querySelectorAll('input[name="food"]:checked').forEach(cb => food += +cb.dataset.price);
+    const tix = seatPrices[seat] * tickets;
+    const grand = tix + food;
+    document.getElementById('totalAmount').textContent = `₹${grand.toLocaleString('en-IN')}`;
+    const nm = seat.charAt(0).toUpperCase() + seat.slice(1);
+    let bd = `${tickets} × ${nm} (₹${tix.toLocaleString('en-IN')})`;
+    if (food) bd += ` + Food (₹${food.toLocaleString('en-IN')})`;
+    document.getElementById('totalBreakdown').textContent = bd;
+  }
+  document.querySelectorAll('input[name="seat"]').forEach(r  => r.addEventListener('change', updateTotal));
+  document.querySelectorAll('input[name="food"]').forEach(cb => cb.addEventListener('change', updateTotal));
+  updateTotal();
+
+  function handleSubmit() {
+    const name  = document.getElementById('fullName').value.trim();
+    const email = document.getElementById('email').value.trim();
+    if (!name)  { alert('Please enter your name.'); return; }
+    if (!email || !email.includes('@')) { alert('Please enter a valid email.'); return; }
+    const movie = document.querySelector('input[name="movie"]:checked').value;
+    const time  = document.querySelector('input[name="time"]:checked').value;
+    const date  = document.getElementById('showDate').value;
+    const ref   = 'CVT-' + Math.floor(100000 + Math.random() * 900000);
+    const fmt   = new Date(date).toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+    document.getElementById('successMovie').textContent   = `${movie} — ${time}`;
+    document.getElementById('successDetails').textContent = `${fmt} · ${tickets} ticket${tickets>1?'s':''} · ${name}`;
+    document.getElementById('ticketRef').textContent      = ref;
+    document.getElementById('formInner').classList.add('hidden');
+    document.getElementById('successScreen').classList.add('visible');
+  }
+</script>
+</body>
+</html>
